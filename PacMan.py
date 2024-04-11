@@ -175,7 +175,6 @@ def getDistance(x1,y1,x2,y2):
 class TableGame:
     def __init__(self):
         self.table = []
-        self.path = []
     def initTable(self):
         for i in range(0,row):
             temp = []
@@ -232,26 +231,8 @@ class TableGame:
         path = self.A_star_algorithm(start,goal)
         if len(path) !=0:
             return [path[0]]
-        if len(path) == 0:
-            for p in PositionCanGoUp(start.posi,start.posj):
-                pygame.draw.rect(screen, (255, 0, 0), (p.posj * width_rec + x_root, p.posi * width_rec + y_root, width_rec, width_rec))
-        return []
-    
-    def A_star_Lv2(self):
-        goal = self.findFoodNearest(pacman.posi,pacman.posj)
-        start = Position(pacman.posi,pacman.posj)
-        path = self.A_star_algorithm(start, goal)
-        if len(self.path) != 0 and len(self.path) <= len(path):
-            time.sleep(1)
-            return []
-        if len(path) != 0:
-            self.path = path
-            return [self.path[0]]
-        if len(self.path) == 0:
-            for p in PositionCanGoUp(start.posi,start.posj):
-                pygame.draw.rect(screen, (255, 0, 0), (p.posj * width_rec + x_root, p.posi * width_rec + y_root, width_rec, width_rec))
-        return []
-    
+        return [DirectionCanGoUp(start.posi,start.posj)[random.randint(0, len(DirectionCanGoUp(start.posi,start.posj)) - 1 )]]
+
     def A_star_lv3(self):
         dire =[]
         start = Position(pacman.posi,pacman.posj)
@@ -381,12 +362,13 @@ class TableGame:
                     isVisited[pos.posi][pos.posj] = 1
                     #print(connectPos[i].posi,connectPos[i].posj)
             queue = sorted(queue, key = lambda item: item[2], reverse = False)
+
         temp = result[len(result) - 1]
         if temp.posi != goal.posi or temp.posj != goal.posj:
             return []
         
         return ConvertToDirection(result)
-    
+
 def ConvertToDirection(pos):
     direction =[]
     i = len(pos) - 1
@@ -401,8 +383,6 @@ def ConvertToDirection(pos):
             else: t=-1
             j+=1
 
-    
-    
     return direction
 
 class PacMan:
@@ -428,16 +408,10 @@ class PacMan:
                 Map.table[self.posi][self.posj] =0
                 playgame.point+=20
             UpdateBlind()
-            n = len(self.direction_queue)
-            
             self.UpdateDirectionQueue()
-            
-            if len(self.direction_queue) == 0:
+            if len(self.direction_queue) ==0:
                 self.v = 0
-                playgame.isplay = False
-                return
             else:self.v = 3
-
         if len(self.direction_queue) != 0:
             if self.direction_queue[0] == LEFT:
                 self.posx -= self.v
@@ -463,14 +437,10 @@ class PacMan:
             self.step = 0
 
     def UpdateDirectionQueue(self):
+
         #A* here. the path is insert to the direction_queue
-        if playgame.select == 1:
+        if playgame.select == 1 or playgame.select == 2:
             self.direction_queue = Map.A_star_Lv1()
-        elif playgame.select == 2:
-            self.direction_queue = Map.A_star_Lv2()
-
-
-            
         elif playgame.select == 3:
             UpdateTableLv3()
             self.direction_queue = Map.A_star_lv3()
@@ -497,6 +467,8 @@ class Monster:
         #lv2 ko di chuyen
         if(playgame.select == 2):
             return
+
+
         else:
             if len(self.direction_queue) == 0:
                 if pacman.posi == self.posi and pacman.posj == self.posj:
@@ -667,15 +639,12 @@ def draw():
     screen.blit(playgame.bg,(0,0))
     drawWall()
     drawFood()
-    drawTableBorder()
-    for mon in monster:
-        mon.drawMonster()
     pacman.drawPacMan()
     for mon in monster:
         mon.drawMonster()
     if playgame.select == 3:
         drawBlind()
-    
+    drawTableBorder()
     pygame.draw.rect(screen, (0, 38, 230), (50,50,150,70), 5)
     screen.blit(pygame.font.SysFont("Consolas",20).render("Point: "+str(playgame.point),True,randomcolor ),(65,75))
 
@@ -738,7 +707,7 @@ def DirectionCanGoUp(i,j):
                 direction.append(DOWN)
         else:
             direction.append(DOWN)
-    
+
     return direction
 
 def PositionCanGoUp(i,j):
@@ -796,10 +765,10 @@ while True:
     Map = TableGame()
     playgame = PlayGame()
     playgame.Choose()
-    if playgame.select == 1:
-        readFile("./map/map1_n.txt")
+    if(playgame.select == 1):
+        readFile("./map/map2.txt")
     elif playgame.select == 2:
-        readFile("./map/map2_1nopath.txt")
+        readFile("./map/map3.txt")
     elif playgame.select == 3:
         num = random.randint(1, 2)
         readFile("./map/map3_" + str(num) + ".txt")
@@ -830,5 +799,5 @@ while True:
                 sys.exit()
         clock.tick(FPS)
         pygame.display.update()
-    
+
     drawResult(round(time.time() - timestart))
