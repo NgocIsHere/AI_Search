@@ -51,10 +51,13 @@ def draw_objects(screen, rows, cols, start_point, end_point, polygons):
             covered_cells.update(get_cells_between(start, end))
         
         # Tô màu các ô chứa các điểm của đa giác
+        i = 255
         for point in polygon:
             x, y = point
+            i = i - 60
+            z = i - 10
             rect = pygame.Rect(x * cell_width, y * cell_height, cell_width, cell_height)
-            pygame.draw.rect(screen, (255, 0, 0), rect)
+            pygame.draw.rect(screen, (i, z, 0), rect)
     
     # Vẽ điểm bắt đầu và điểm kết thúc
     start_x, start_y = start_point

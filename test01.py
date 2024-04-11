@@ -143,6 +143,7 @@ def draw_path(screen, path, cell_width, cell_height):
         screen.blit(text, (x * cell_width + cell_width // 3, y * cell_height + cell_height // 3))
 
 # Hàm tìm đường đi từ start đến end không đi vào các ô đã tô màu và không đi lên cạnh, sử dụng thuật toán A*
+# Hàm tìm đường đi từ start đến end sử dụng thuật toán A*
 def find_path(rows, cols, start, end, colored_cells):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]  # Hướng di chuyển: phải, trái, xuống, lên
     
@@ -172,6 +173,10 @@ def find_path(rows, cols, start, end, colored_cells):
                     heapq.heappush(queue, (new_cost + manhattan_distance(new_cell, end), new_cell))
                     path_map[new_cell] = (new_cost, current)
     
+    # Kiểm tra xem có tìm được đường đi từ start đến end không
+    if end not in path_map:
+        return None  # Không tìm được đường đi
+    
     # Tạo đường đi từ end đến start
     path = []
     current = end
@@ -186,6 +191,7 @@ def find_path(rows, cols, start, end, colored_cells):
 # Hàm tính khoảng cách Manhattan giữa hai điểm
 def manhattan_distance(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+
 ################################################
 # Hàm tìm đường đi từ start đến end không đi vào các ô đã tô màu và không đi lên cạnh, sử dụng thuật toán Greedy:
 def find_path_greedy(rows, cols, start, end, colored_cells):
@@ -216,6 +222,8 @@ def find_path_greedy(rows, cols, start, end, colored_cells):
                     visited.add(new_cell)
                     heapq.heappush(queue, (manhattan_distance(new_cell, end), new_cell))
     
+    if end not in visited:
+        return None  # Không tìm được đường đi
     # Tạo đường đi từ end đến start
     path = []
     current = end
@@ -263,7 +271,8 @@ def find_path_dfs(rows, cols, start, end, colored_cells):
                 visited.add(new_cell)
                 stack.append(new_cell)
                 parent_map[new_cell] = current
-    
+    if end not in visited:
+        return None  # Không tìm được đường đi
     # Tạo đường đi từ end đến start
     path = []
     current = end
@@ -352,21 +361,21 @@ def main():
         colored_cells.update(draw_objects(screen, rows, cols, start_point, end_point, polygons))
         
         # A*:
-        path = find_path(rows, cols, start_point, end_point, colored_cells)
+        # path = find_path(rows, cols, start_point, end_point, colored_cells)
         
         # Greedy:
-        # path = find_path_greedy(rows, cols, start_point, end_point, colored_cells)
+        path = find_path_greedy(rows, cols, start_point, end_point, colored_cells)
         
         # DFS:
         # path = find_path_dfs(rows, cols, start_point, end_point, colored_cells)
         
         # BFS:
-        # path = bfs_level1(rows, cols, start_point, end_point, colored_cells)
+        path = bfs_level1(rows, cols, start_point, end_point, colored_cells)
         # print(path)
         if  path == None:
             running = False
         else:
-            draw_path(screen, path, cell_width, cell_height)
+            draw_path(screen, path[1], cell_width, cell_height)
             
         pygame.display.flip()  
         pygame.time.delay(10000)

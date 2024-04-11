@@ -37,6 +37,9 @@ def bfs_level3(map, start, goal, must_passes):
     # must_passes là mảng gồm một tập các điểm đón phải đi qua
     # giả sử ta ký hiệu luôn đại diện cua mỗi điểm đón là vị trí của điểm đó trong mảng must_passes
 
+    if len(must_passes) == 0:
+        return bfs_level1(map, start, goal)
+
     d = [['inf'] * len(must_passes) for i in range(len(must_passes))] # khởi tạo khoảng cách giữa các điểm đến là vô cùng
     sz = len(must_passes) # so diem don phai di qua
 
@@ -50,13 +53,19 @@ def bfs_level3(map, start, goal, must_passes):
         gap = 0
         new_path = []
         res = bfs_level1(map.copy(), start, must_passes[permutation[0]])
+        if not res:
+            continue
         gap += res[0] #khoảng cách giữa start và điểm đón đầu tiên
         new_path += res[1]
         for i in range(len(must_passes) - 1):
             distance = d[permutation[i]][permutation[i + 1]] #khoảng cách giữa các điểm đón
+            if not distance: # nếu mà không tồn tài đường đi giữa hai điểm đón thì bỏ path này
+                continue
             gap += distance[0]
             new_path += d[permutation[i]][permutation[i + 1]][1][1:]
         res = bfs_level1(map.copy(), must_passes[permutation[sz - 1]], goal)
+        if not res:
+            continue
         gap += res[0] # khoảng cách giữa điểm đón cuối cùng và goal
         new_path += res[1][1:]
 
@@ -64,26 +73,18 @@ def bfs_level3(map, start, goal, must_passes):
             shortest = gap
             shortest_path = new_path
 
+    if len(shortest_path) == 0:
+        return None
     return (shortest, shortest_path)
 
+map = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#', '#', '#', '#', 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#', 0, 0, '#', 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#', 0, 0, '#', 0, 0, '#'], ['#', 0, 0, 0, '#', '#', '#', 0, 0, 0, 0, '#', 0, 0, '#', 0, 0, '#'], ['#', 0, 0, 0, '#', 0, 0, '#', '#', '#', 0, '#', 0, 0, '#', 0, 0, '#'], ['#', 0, 0, 0, '#', 0, 0, 0, 0, '#', 0, '#', '#', '#', '#', 0, 0, '#'], ['#', 0, 0, 0, 0, '#', 0, 0, 0, '#', 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, '#', 0, 0, '#', 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, '#', '#', 0, '#', 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, '#', '#', 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', '#', '#', '#', '#', '#', 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', 0, 0, 0, '#', 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', 0, 0, '#', 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', 0, '#', 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', '#', 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, '#', 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '#'], ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
 
-
-map = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '#', '#', '#'], 
-       ['#', '#', '#', '0', '0', '0', '0', '#', '0', '#'], 
-       ['#', '#', '#', '0', '0', '0', '0', '#', '#', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
 must_passes = [(3, 1), (4, 4), (6, 6)]
 
-start = (1, 0)
+start = (1, 1)
 goal = (9, 9)
 
-cost, path = bfs_level1(map, start, goal)
-# cost, path = bfs_level3(map.copy(), start, goal, must_passes)
+cost = bfs_level1(map, start, goal)
+# cost = bfs_level3(map.copy(), start, goal, must_passes)
 
-print(cost, path)
+print(cost)
