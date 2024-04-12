@@ -669,16 +669,20 @@ class AlgorithmChooser:
         elif x > width/2-220 and x < width/2-20 and y > height/2 + 20 and y < height/2 + 170:
             self.choice = find_path_bfs
             pygame.draw.rect(
-                screen, color, (width/2-120, height/2 + 15, 200, 80), 8)
-        else:
-            self.select = 0
+                screen, color, (width/2-225, height/2 + 15, 200, 80), 8)
+        elif x > width/2+20 and x < width/2+220 and y > height/2 + 20 and y < height/2 + 170:
+            self.choice = find_path_dfs
+            pygame.draw.rect(
+                screen, color, (width/2+15, height/2 + 15, 200, 80), 8)
 
         screen.blit(pygame.font.SysFont("Consolas", 20).render(
             "A Star", True, color), (width/2-160, height/2 - 40))
         screen.blit(pygame.font.SysFont("Consolas", 20).render(
             "Greedy Search", True, color), (width/2 + 48, height/2-40))
         screen.blit(pygame.font.SysFont("Consolas", 20).render(
-            "BFS", True, color), (width/2-40, height/2 + 48))
+            "BFS", True, color), (width/2-160, height/2 + 48))
+        screen.blit(pygame.font.SysFont("Consolas", 20).render(
+            "DFS", True, color), (width/2+48, height/2 + 48))
         pygame.display.flip()
 
     def choose(self):
@@ -764,7 +768,7 @@ class PlayGame:
                                 Map.table[point[0]][point[1]] = 1
                     else:
                         index_border += 1
-
+                if self.isplay == True:
                     robot.direction_queue = algo(
                         row, column, (robot.posi, robot.posj), (Map.goal), Map.table)[1:]
 
