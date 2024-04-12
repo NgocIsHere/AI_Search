@@ -887,30 +887,30 @@ class PlayGame:
         self.isplay = True
 
         if level == 1:
-            # try:
-            readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
-            self.map.checkpoint = []
-            for polygon in self.map.polygons:
-                path = self.map.plotting_polygon(polygon)
-                self.map.paint_inside_polygon(path)
+            try:
+                readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
+                self.map.checkpoint = []
+                for polygon in self.map.polygons:
+                    path = self.map.plotting_polygon(polygon)
+                    self.map.paint_inside_polygon(path)
 
-            self.robot.direction_queue = algo(
-                self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
+                self.robot.direction_queue = algo(
+                    self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
 
-            while self.isplay:
-                width, height = screen.get_size()
-                x_root = width/2 - column * width_rec/2
-                y_root = height/2 - row*width_rec/2
-                draw()
+                while self.isplay:
+                    width, height = screen.get_size()
+                    x_root = width/2 - column * width_rec/2
+                    y_root = height/2 - row*width_rec/2
+                    draw()
 
-                for e in pygame.event.get():
-                    if e.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-                clock.tick(FPS)
-                pygame.display.update()
-            # except:
-            #     exception()
+                    for e in pygame.event.get():
+                        if e.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                    clock.tick(FPS)
+                    pygame.display.update()
+            except:
+                exception()
 
         elif level == 2:
             try:
