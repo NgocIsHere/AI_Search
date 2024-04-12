@@ -711,7 +711,7 @@ class PlayGame:
         def exception():
             self.isplay = False
             drawWall()
-            drawCheckPoint()
+            # drawCheckPoint()
             drawGoal()
             drawRobot(robot)
             font = pygame.font.SysFont('DroidSans', 50)
