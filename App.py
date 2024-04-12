@@ -790,8 +790,8 @@ class PlayGame:
                                                        x_root + 1, point[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
         def drawGoal():
-            pygame.draw.rect(screen, (255, 0, 0), (self.map.goal[1] * width_rec +
-                                                   x_root + 1, self.map.goal[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
+            pygame.draw.rect(screen, (0, 0, 0), (self.map.goal[1] * width_rec +
+                                                 x_root + 1, self.map.goal[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
         def drawPath(path):
             for cell in path:
@@ -799,21 +799,21 @@ class PlayGame:
                                                            x_root + 1, cell[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
         def draw():
-            randomcolor = (random.randint(0, 255), random.randint(
-                0, 255), random.randint(0, 255))
-            # screen.blit(self.bg, (0, 0))
+            screen.blit(self.bg, (0, 0))
             drawWall()
             drawPath(self.robot.direction_queue)
             drawCheckPoint()
             drawGoal()
             if drawRobot():
                 self.point += 1
-                drawPoint(self.point)
             if self.map.table[self.robot.posi][self.robot.posj] == 3:
                 self.isplay = False
-                point = 0
+                self.point = 0
+                time.sleep(5)
+            drawPoint(self.point)
 
         def drawlv3(amount):
+            screen.blit(self.bg, (0, 0))
             polygon_steps = [(-1, 0), (1, 0), (0, 1), (0, -1)]
 
             # screen.blit(self.bg, (0, 0))
@@ -822,9 +822,10 @@ class PlayGame:
             drawGoal()
             if drawRobot():
                 self.point += 1
-                drawPoint(self.point)
                 if self.map.table[self.robot.posi][self.robot.posj] == 3:
                     self.isplay = False
+                    self.point = 0
+                    time.sleep(5)
                 self.map.table[self.robot.posi][self.robot.posj] = 2
 
                 index_border = 0
@@ -852,10 +853,12 @@ class PlayGame:
                 if self.isplay == True:
                     self.robot.direction_queue = algo(
                         self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
+            drawPoint(self.point)
 
             if self.map.table[self.robot.posi][self.robot.posj] == 3:
                 self.isplay = False
-                point = 0
+                self.point = 0
+                time.sleep(5)
             self.map.table[self.robot.posi][self.robot.posj] = 2
 
         def drawRobot():
@@ -953,7 +956,7 @@ class PlayGame:
                     width, height = screen.get_size()
                     x_root = width/2 - column * width_rec/2
                     y_root = height/2 - row*width_rec/2
-                    drawlv3(self.robot, len(polygon_borders))
+                    drawlv3(len(polygon_borders))
 
                     for e in pygame.event.get():
                         if e.type == pygame.QUIT:
