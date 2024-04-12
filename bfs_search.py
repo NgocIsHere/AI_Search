@@ -1,17 +1,21 @@
 from collections import deque
 from itertools import permutations
 
+
 def can_move(map, row, col):
     return (row >= 0) and (row < len(map)) and \
-    (col >= 0) and (col < len(map[0])) and \
-    (map[row][col] == '0')
+        (col >= 0) and (col < len(map[0])) and \
+        (map[row][col] == '0')
+
 
 def bfs_level1(map, start, goal):
     visited = [[False] * len(map[0]) for i in range(len(map))]
 
-    steps = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)] # up, down, left, right, north-west, north-east, south-west, south-east
+    # up, down, left, right, north-west, north-east, south-west, south-east
+    steps = [(-1, 0), (1, 0), (0, -1), (0, 1),
+             (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
-    queue = deque([(start[0], start[1], 0, [])]) #(row, col, cost, path)
+    queue = deque([(start[0], start[1], 0, [])])  # (row, col, cost, path)
     visited[start[0]][start[1]] = True
 
     while len(queue) > 0:
@@ -33,15 +37,16 @@ def bfs_level1(map, start, goal):
     return None
 
 
-def bfs_level3(map, start, goal, must_passes):
+def checkpointlevel(map, start, goal, must_passes):
     # must_passes là mảng gồm một tập các điểm đón phải đi qua
     # giả sử ta ký hiệu luôn đại diện cua mỗi điểm đón là vị trí của điểm đó trong mảng must_passes
 
     if len(must_passes) == 0:
         return bfs_level1(map, start, goal)
 
-    d = [['inf'] * len(must_passes) for i in range(len(must_passes))] # khởi tạo khoảng cách giữa các điểm đến là vô cùng
-    sz = len(must_passes) # so diem don phai di qua
+    # khởi tạo khoảng cách giữa các điểm đến là vô cùng
+    d = [['inf'] * len(must_passes) for i in range(len(must_passes))]
+    sz = len(must_passes)  # so diem don phai di qua
 
     for m in range(len(must_passes)):
         for n in range(len(must_passes)):
@@ -55,11 +60,12 @@ def bfs_level3(map, start, goal, must_passes):
         no_path = False
         if not res:
             continue
-        gap += len(res) - 1 #khoảng cách giữa start và điểm đón đầu tiên
+        gap += len(res) - 1  # khoảng cách giữa start và điểm đón đầu tiên
         new_path += res
         for i in range(len(must_passes) - 1):
-            distance = d[permutation[i]][permutation[i + 1]] #khoảng cách giữa các điểm đón
-            if not distance: # nếu mà không tồn tài đường đi giữa hai điểm đón thì bỏ path này
+            # khoảng cách giữa các điểm đón
+            distance = d[permutation[i]][permutation[i + 1]]
+            if not distance:  # nếu mà không tồn tài đường đi giữa hai điểm đón thì bỏ path này
                 no_path = True
                 break
             gap += len(distance) - 1
@@ -69,10 +75,10 @@ def bfs_level3(map, start, goal, must_passes):
             continue
         if not res:
             continue
-        gap += len(res) - 1 # khoảng cách giữa điểm đón cuối cùng và goal
+        gap += len(res) - 1  # khoảng cách giữa điểm đón cuối cùng và goal
         new_path += res[1:]
 
-        if(gap < shortest):
+        if (gap < shortest):
             shortest = gap
             shortest_path = new_path
 
@@ -81,18 +87,17 @@ def bfs_level3(map, start, goal, must_passes):
     return shortest_path
 
 
-
-map = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '#', '#', '#'], 
-       ['#', '#', '#', '0', '0', '0', '0', '#', '0', '#'], 
-       ['#', '0', '#', '0', '0', '0', '0', '#', '#', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
-       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
+map = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+       ['#', '0', '0', '0', '0', '0', '0', '#', '#', '#'],
+       ['#', '#', '#', '0', '0', '0', '0', '#', '0', '#'],
+       ['#', '0', '#', '0', '0', '0', '0', '#', '#', '#'],
+       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'],
+       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'],
+       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'],
+       ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'],
        ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
 
-must_passes = [(3, 1), (4, 4), (6, 6), (5, 4), (4,3), (4, 1)]
+must_passes = [(3, 1), (4, 4), (6, 6), (5, 4), (4, 3), (4, 1)]
 
 start = (1, 1)
 goal = (7, 8)

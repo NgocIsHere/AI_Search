@@ -6,7 +6,7 @@ import sys
 from pygame.locals import *
 import heapq
 from collections import deque
-
+from itertools import permutations
 
 pygame.init()
 width = 1280
@@ -69,7 +69,7 @@ def manhattan_distance(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 
-def find_path_dfs(rows, cols, start, end, table):
+def find_path_dfs(table, start, end):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1),
                   (1, -1), (1, 1)]  # Hướng di chuyển: phải, trái, xuống, lên
 
@@ -92,7 +92,7 @@ def find_path_dfs(rows, cols, start, end, table):
         # Duyệt các ô lân cận
         for dx, dy in directions:
             new_cell = (current[0] + dx, current[1] + dy)
-            if 0 <= new_cell[0] < rows and 0 <= new_cell[1] < cols and table[new_cell[0]][new_cell[1]] not in (1, 4) and new_cell not in visited:
+            if 0 <= new_cell[0] < len(table) and 0 <= new_cell[1] < len(table[0]) and table[new_cell[0]][new_cell[1]] not in (1, 4) and new_cell not in visited:
                 visited.add(new_cell)
                 stack.append(new_cell)
                 parent_map[new_cell] = current
@@ -110,7 +110,7 @@ def find_path_dfs(rows, cols, start, end, table):
     return path
 
 
-def find_path_bfs(rows, cols, start_point, end_point, map):
+def find_path_bfs(map, start_point, end_point):
     def can_move(map, row, col):
         return (row >= 0) and (row < len(map)) and \
             (col >= 0) and (col < len(map[0])) and \
@@ -145,7 +145,7 @@ def find_path_bfs(rows, cols, start_point, end_point, map):
     return None
 
 
-def find_path_greedy(rows, cols, start, end, table):
+def find_path_greedy(table, start, end):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1),
                   (1, -1), (1, 1)]  # Hướng di chuyển: phải, trái, xuống, lên
 
@@ -169,7 +169,7 @@ def find_path_greedy(rows, cols, start, end, table):
         # Duyệt các ô lân cận
         for dx, dy in directions:
             new_cell = (current[0] + dx, current[1] + dy)
-            if 0 <= new_cell[0] < rows and 0 <= new_cell[1] < cols and table[new_cell[0]][new_cell[1]] not in (1, 4):
+            if 0 <= new_cell[0] < len(table) and 0 <= new_cell[1] < len(table[0]) and table[new_cell[0]][new_cell[1]] not in (1, 4):
                 if new_cell not in visited:
                     visited.add(new_cell)
                     heapq.heappush(
@@ -185,7 +185,7 @@ def find_path_greedy(rows, cols, start, end, table):
         min_cell = None
         for dx, dy in directions:
             new_cell = (current[0] + dx, current[1] + dy)
-            if 0 <= new_cell[0] < rows and 0 <= new_cell[1] < cols and new_cell in visited and new_cell not in path:
+            if 0 <= new_cell[0] < len(table) and 0 <= new_cell[1] < len(table[0]) and new_cell in visited and new_cell not in path:
                 dist = manhattan_distance(new_cell, start)
                 if dist < min_dist:
                     min_dist = dist
@@ -197,7 +197,7 @@ def find_path_greedy(rows, cols, start, end, table):
     return path
 
 
-def find_path_A_Star(rows, cols, start, end, table):
+def find_path_A_Star(table, start, end):
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1),
                   (1, -1), (1, 1)]  # Hướng di chuyển: phải, trái, xuống, lên
 
@@ -220,7 +220,7 @@ def find_path_A_Star(rows, cols, start, end, table):
         # Duyệt các ô lân cận
         for dx, dy in directions:
             new_cell = (current[0] + dx, current[1] + dy)
-            if 0 <= new_cell[0] < rows and 0 <= new_cell[1] < cols and table[new_cell[0]][new_cell[1]] not in (1, 4):
+            if 0 <= new_cell[0] < len(table) and 0 <= new_cell[1] < len(table[0]) and table[new_cell[0]][new_cell[1]] not in (1, 4):
                 new_cost = path_map[current][0] + 1
                 if new_cell not in visited or new_cost < path_map[new_cell][0]:
                     visited.add(new_cell)
@@ -283,11 +283,9 @@ def readFile(Map, robot, filename):
         Map.table[robot.posi][robot.posj] = 2
         Map.table[Map.goal[0]][Map.goal[1]] = 3
 
-        Map.checkpoint.append((robot.posi, robot.posj))
         line = file.readline().split(',')
         for i in range(0, len(line), 2):
             Map.checkpoint.append((row - 1 - int(line[i + 1]), int(line[i])))
-        Map.checkpoint.append(Map.goal)
 
 
 class TableGame:
@@ -706,8 +704,77 @@ class PlayGame:
         self.bg = pygame.image.load("./image/bg.jpg")
 
     def handle_game(self, level, map, algo):
+        width, height = screen.get_size()
+        x_root = width/2 - column * width_rec/2
+        y_root = height/2 - row*width_rec/2
+
+        def exception():
+            self.isplay = False
+            drawWall()
+            drawCheckPoint()
+            drawGoal()
+            drawRobot(robot)
+            font = pygame.font.SysFont('DroidSans', 50)
+            color = (int(255), int(0), int(0))
+            screen.blit(font.render("No Path FOUND!!!",
+                        True, (color)), (width/2 - 200, 98))
+            pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
+            pygame.display.flip()
+            time.sleep(5)
+
+        def checkpointlevel(map, start, goal, must_passes, algo):
+            # must_passes là mảng gồm một tập các điểm đón phải đi qua
+            # giả sử ta ký hiệu luôn đại diện cua mỗi điểm đón là vị trí của điểm đó trong mảng must_passes
+
+            if len(must_passes) == 0:
+                return algo(map, start, goal)
+
+            # khởi tạo khoảng cách giữa các điểm đến là vô cùng
+            d = [['inf'] * len(must_passes) for i in range(len(must_passes))]
+            sz = len(must_passes)  # so diem don phai di qua
+
+            for m in range(len(must_passes)):
+                for n in range(len(must_passes)):
+                    d[m][n] = algo(map.copy(), must_passes[m], must_passes[n])
+            shortest = float('inf')
+            shortest_path = []
+            for permutation in permutations(range(sz)):
+                gap = 0
+                new_path = []
+                res = algo(map.copy(), start, must_passes[permutation[0]])
+                no_path = False
+                if not res:
+                    continue
+                # khoảng cách giữa start và điểm đón đầu tiên
+                gap += len(res) - 1
+                new_path += res
+                for i in range(len(must_passes) - 1):
+                    # khoảng cách giữa các điểm đón
+                    distance = d[permutation[i]][permutation[i + 1]]
+                    if not distance:  # nếu mà không tồn tài đường đi giữa hai điểm đón thì bỏ path này
+                        no_path = True
+                        break
+                    gap += len(distance) - 1
+                    new_path += d[permutation[i]][permutation[i + 1]][1:]
+                res = algo(map.copy(), must_passes[permutation[sz - 1]], goal)
+                if no_path:
+                    continue
+                if not res:
+                    continue
+                # khoảng cách giữa điểm đón cuối cùng và goal
+                gap += len(res) - 1
+                new_path += res[1:]
+
+                if (gap < shortest):
+                    shortest = gap
+                    shortest_path = new_path
+
+            if len(shortest_path) == 0:
+                return None
+            return shortest_path
+
         def drawCheckPoint():
-            for point in Map.checkpoint[1:]:
+            for point in Map.checkpoint:
                 pygame.draw.rect(screen, (255, 0, 0), (point[1] * width_rec +
                                                        x_root + 1, point[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
@@ -770,7 +837,7 @@ class PlayGame:
                         index_border += 1
                 if self.isplay == True:
                     robot.direction_queue = algo(
-                        row, column, (robot.posi, robot.posj), (Map.goal), Map.table)[1:]
+                        Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
 
             if Map.table[robot.posi][robot.posj] == 3:
                 self.isplay = False
@@ -791,12 +858,7 @@ class PlayGame:
                     pygame.draw.rect(screen, (0, 0, 0), (j * width_rec +
                                                          x_root, i * width_rec + y_root, width_rec, width_rec))
 
-                    if Map.table[i][j] == 1:  # Check if the cell contains a wall
-                        # Draw a rectangle for the wall
-                        # screen.blit(pygame.transform.scale(pygame.image.load(
-                        #     "./image/pacman.png"), (width_rec/2, width_rec/2)), (j * width_rec +
-                        #                                                          x_root, i * width_rec + y_root, width_rec, width_rec))
-
+                    if Map.table[i][j] == 1:
                         pygame.draw.rect(screen, wall_color, (j * width_rec +
                                                               x_root + 1, i * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
                     else:
@@ -816,7 +878,7 @@ class PlayGame:
                     Map.paint_inside_polygon(path)
 
                 robot.direction_queue = algo(
-                    row, column, (robot.posi, robot.posj), (Map.goal), Map.table)[1:]
+                    Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
 
                 while self.isplay:
                     width, height = screen.get_size()
@@ -831,68 +893,33 @@ class PlayGame:
                     clock.tick(FPS)
                     pygame.display.update()
             except:
-                width, height = screen.get_size()
-                x_root = width/2 - column * width_rec/2
-                y_root = height/2 - row*width_rec/2
-                self.isplay = False
-                drawWall()
-                drawRobot(robot)
-                font = pygame.font.SysFont('DroidSans', 50)
-                color = (int(255), int(0), int(0))
-                screen.blit(font.render("No Path FOUND!!!",
-                            True, (color)), (width/2 - 200, 98))
-                pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
-                pygame.display.flip()
-                time.sleep(5)
+                exception()
 
         elif level == 2:
             try:
                 readFile(Map, robot, "./map/" + str(map) + ".txt")
-                for point in Map.checkpoint[1:]:
-                    Map.table[point[0]][point[1]] = 3
 
                 for polygon in Map.polygons:
                     path = Map.plotting_polygon(polygon)
                     Map.paint_inside_polygon(path)
 
-                paths = []
-
-                for i in range(len(Map.checkpoint)-1):
-                    paths.append(algo(
-                        row, column, Map.checkpoint[i], Map.checkpoint[i+1], Map.table)[1:])
+                robot.direction_queue = checkpointlevel(
+                    Map.table, (robot.posi, robot.posj), Map.goal, Map.checkpoint, algo)[1:]
 
                 while self.isplay:
-                    for p in paths:
-                        self.isplay = True
-                        robot.direction_queue = p
-                        Map.table[robot.posi][robot.posj] = 2
-                        while self.isplay:
-                            width, height = screen.get_size()
-                            x_root = width/2 - column * width_rec/2
-                            y_root = height/2 - row*width_rec/2
-                            draw(robot)
+                    width, height = screen.get_size()
+                    x_root = width/2 - column * width_rec/2
+                    y_root = height/2 - row*width_rec/2
+                    draw(robot)
 
-                            for e in pygame.event.get():
-                                if e.type == pygame.QUIT:
-                                    pygame.quit()
-                                    sys.exit()
-                            clock.tick(FPS)
-                            pygame.display.update()
-
+                    for e in pygame.event.get():
+                        if e.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                    clock.tick(FPS)
+                    pygame.display.update()
             except:
-                width, height = screen.get_size()
-                x_root = width/2 - column * width_rec/2
-                y_root = height/2 - row*width_rec/2
-                self.isplay = False
-                drawWall()
-                drawRobot(robot)
-                font = pygame.font.SysFont('DroidSans', 50)
-                color = (int(255), int(0), int(0))
-                screen.blit(font.render("No Path FOUND!!!",
-                            True, (color)), (width/2 - 200, 98))
-                pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
-                pygame.display.flip()
-                time.sleep(5)
+                exception()
 
         elif level == 3:
             try:
@@ -906,7 +933,7 @@ class PlayGame:
                     Map.paint_inside_polygon(border)
 
                 robot.direction_queue = algo(
-                    row, column, (robot.posi, robot.posj), (Map.goal), Map.table)[1:]
+                    Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
                 while self.isplay:
 
                     width, height = screen.get_size()
@@ -921,19 +948,7 @@ class PlayGame:
                     clock.tick(FPS)
                     pygame.display.update()
             except:
-                width, height = screen.get_size()
-                x_root = width/2 - column * width_rec/2
-                y_root = height/2 - row*width_rec/2
-                self.isplay = False
-                drawWall()
-                drawRobot(robot)
-                font = pygame.font.SysFont('DroidSans', 50)
-                color = (int(255), int(0), int(0))
-                screen.blit(font.render("No Path FOUND!!!",
-                            True, (color)), (width/2 - 200, 98))
-                pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
-                pygame.display.flip()
-                time.sleep(5)
+                exception()
 
 
 while True:
