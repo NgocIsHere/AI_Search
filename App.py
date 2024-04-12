@@ -114,7 +114,7 @@ def find_path_bfs(rows, cols, start_point, end_point, map):
     def can_move(map, row, col):
         return (row >= 0) and (row < len(map)) and \
             (col >= 0) and (col < len(map[0])) and \
-            (map[row][col] != 1)
+            (map[row][col] != 1 and map[row][col] != 4)
 
     visited = [[False] * len(map[0]) for i in range(len(map))]
 
@@ -137,7 +137,7 @@ def find_path_bfs(rows, cols, start_point, end_point, map):
                     newPath = path + [(row, col)]
                     if next_row == end_point[0] and next_col == end_point[1]:
                         newPath.append((next_row, next_col))
-                        return (cost, newPath)
+                        return newPath
                     else:
                         queue.append((next_row, next_col, cost, newPath))
                         visited[next_row][next_col] = True
