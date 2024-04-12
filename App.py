@@ -712,10 +712,9 @@ class PlayGame:
 
         def drawPoint(a):
             # Render text (number) in black color
-            text_surface = font.render(str(a), True, (255, 0, 0))
-
-            # Adjust the position as needed
-            screen.blit(text_surface, (20, 20))
+            pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
+            screen.blit(pygame.font.SysFont("Consolas", 20).render(
+                "Point: "+str(a), True, (255, 0, 0)), (65, 75))
 
         width, height = screen.get_size()
         x_root = width/2 - column * width_rec/2
