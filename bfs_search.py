@@ -25,7 +25,7 @@ def bfs_level1(map, start, goal):
                     newPath = path + [(row, col)]
                     if next_row == goal[0] and next_col == goal[1]:
                         newPath.append((next_row, next_col))
-                        return (cost, newPath)
+                        return newPath
                     else:
                         queue.append((next_row, next_col, cost, newPath))
                         visited[next_row][next_col] = True
@@ -46,28 +46,31 @@ def bfs_level3(map, start, goal, must_passes):
     for m in range(len(must_passes)):
         for n in range(len(must_passes)):
             d[m][n] = bfs_level1(map.copy(), must_passes[m], must_passes[n])
-
     shortest = float('inf')
     shortest_path = []
     for permutation in permutations(range(sz)):
         gap = 0
         new_path = []
         res = bfs_level1(map.copy(), start, must_passes[permutation[0]])
+        no_path = False
         if not res:
             continue
-        gap += res[0] #khoảng cách giữa start và điểm đón đầu tiên
-        new_path += res[1]
+        gap += len(res) - 1 #khoảng cách giữa start và điểm đón đầu tiên
+        new_path += res
         for i in range(len(must_passes) - 1):
             distance = d[permutation[i]][permutation[i + 1]] #khoảng cách giữa các điểm đón
             if not distance: # nếu mà không tồn tài đường đi giữa hai điểm đón thì bỏ path này
+                no_path = True
                 break
-            gap += distance[0]
-            new_path += d[permutation[i]][permutation[i + 1]][1][1:]
+            gap += len(distance) - 1
+            new_path += d[permutation[i]][permutation[i + 1]][1:]
         res = bfs_level1(map.copy(), must_passes[permutation[sz - 1]], goal)
+        if no_path:
+            continue
         if not res:
             continue
-        gap += res[0] # khoảng cách giữa điểm đón cuối cùng và goal
-        new_path += res[1][1:]
+        gap += len(res) - 1 # khoảng cách giữa điểm đón cuối cùng và goal
+        new_path += res[1:]
 
         if(gap < shortest):
             shortest = gap
@@ -75,14 +78,14 @@ def bfs_level3(map, start, goal, must_passes):
 
     if len(shortest_path) == 0:
         return None
-    return (shortest, shortest_path)
+    return shortest_path
 
 
 
 map = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], 
        ['#', '0', '0', '0', '0', '0', '0', '#', '#', '#'], 
        ['#', '#', '#', '0', '0', '0', '0', '#', '0', '#'], 
-       ['#', '#', '#', '0', '0', '0', '0', '#', '#', '#'], 
+       ['#', '0', '#', '0', '0', '0', '0', '#', '#', '#'], 
        ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
        ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
        ['#', '0', '0', '0', '0', '0', '0', '0', '0', '#'], 
@@ -96,9 +99,6 @@ goal = (7, 8)
 cost = 'inf'
 path = []
 res = bfs_level3(map.copy(), start, goal, must_passes)
-if (res):
-    cost, path = res
 
 # cost, path = bfs_level3(map.copy(), start, goal, must_passes)
 print(res)
-print(cost, path)
