@@ -110,13 +110,11 @@ def find_path_dfs(rows, cols, start, end, table):
     return path
 
 
-def find_path_bfs(rows, cols, start_point, end_point, table):
+def find_path_bfs(rows, cols, start_point, end_point, map):
     def can_move(map, row, col):
         return (row >= 0) and (row < len(map)) and \
             (col >= 0) and (col < len(map[0])) and \
-            (map[row][col] == 0)
-
-    map = [row[:] for row in table]
+            (map[row][col] != 1)
 
     visited = [[False] * len(map[0]) for i in range(len(map))]
 
@@ -669,7 +667,7 @@ class AlgorithmChooser:
             pygame.draw.rect(
                 screen, color, (width/2+15, height/2-75, 200, 80), 8)
         elif x > width/2-220 and x < width/2-20 and y > height/2 + 20 and y < height/2 + 170:
-            self.choice = find_path_dfs
+            self.choice = find_path_bfs
             pygame.draw.rect(
                 screen, color, (width/2-120, height/2 + 15, 200, 80), 8)
         else:
@@ -895,7 +893,6 @@ class PlayGame:
         elif level == 3:
             try:
                 Map.checkpoint = []
-
                 readFile(Map, robot, "./map/" + str(map) + ".txt")
 
                 polygon_borders = []
