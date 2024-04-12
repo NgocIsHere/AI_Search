@@ -702,8 +702,21 @@ class PlayGame:
     def __init__(self):
         self.isplay = False
         self.bg = pygame.image.load("./image/bg.jpg")
+        self.point = 0
+        self.robot = 0
+        self.map = 0
 
     def handle_game(self, level, map, algo):
+        # You can also specify a specific font here
+        font = pygame.font.SysFont(None, 48)
+
+        def drawPoint(a):
+            # Render text (number) in black color
+            text_surface = font.render(str(a), True, (255, 0, 0))
+
+            # Adjust the position as needed
+            screen.blit(text_surface, (20, 20))
+
         width, height = screen.get_size()
         x_root = width/2 - column * width_rec/2
         y_root = height/2 - row*width_rec/2
@@ -713,12 +726,11 @@ class PlayGame:
             drawWall()
             # drawCheckPoint()
             drawGoal()
-            drawRobot(robot)
+            drawRobot()
             font = pygame.font.SysFont('DroidSans', 50)
             color = (int(255), int(0), int(0))
             screen.blit(font.render("No Path FOUND!!!",
                         True, (color)), (width/2 - 200, 98))
-            pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
             pygame.display.flip()
             time.sleep(5)
 
@@ -774,44 +786,47 @@ class PlayGame:
             return shortest_path
 
         def drawCheckPoint():
-            for point in Map.checkpoint:
+            for point in self.map.checkpoint:
                 pygame.draw.rect(screen, (255, 0, 0), (point[1] * width_rec +
                                                        x_root + 1, point[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
         def drawGoal():
-            pygame.draw.rect(screen, (255, 0, 0), (Map.goal[1] * width_rec +
-                                                   x_root + 1, Map.goal[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
+            pygame.draw.rect(screen, (255, 0, 0), (self.map.goal[1] * width_rec +
+                                                   x_root + 1, self.map.goal[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
         def drawPath(path):
             for cell in path:
                 pygame.draw.rect(screen, (255, 182, 193), (cell[1] * width_rec +
                                                            x_root + 1, cell[0] * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
 
-        def draw(robot):
+        def draw():
             randomcolor = (random.randint(0, 255), random.randint(
                 0, 255), random.randint(0, 255))
             # screen.blit(self.bg, (0, 0))
             drawWall()
-            drawPath(robot.direction_queue)
+            drawPath(self.robot.direction_queue)
             drawCheckPoint()
             drawGoal()
-            drawRobot(robot)
-            if Map.table[robot.posi][robot.posj] == 3:
+            if drawRobot():
+                self.point += 1
+                drawPoint(self.point)
+            if self.map.table[self.robot.posi][self.robot.posj] == 3:
                 self.isplay = False
+                point = 0
 
-            pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
-
-        def drawlv3(robot, amount):
+        def drawlv3(amount):
             polygon_steps = [(-1, 0), (1, 0), (0, 1), (0, -1)]
 
             # screen.blit(self.bg, (0, 0))
             drawWall()
-            drawPath(robot.direction_queue)
+            drawPath(self.robot.direction_queue)
             drawGoal()
-            if drawRobot(robot):
-                if Map.table[robot.posi][robot.posj] == 3:
+            if drawRobot():
+                self.point += 1
+                drawPoint(self.point)
+                if self.map.table[self.robot.posi][self.robot.posj] == 3:
                     self.isplay = False
-                Map.table[robot.posi][robot.posj] = 2
+                self.map.table[self.robot.posi][self.robot.posj] = 2
 
                 index_border = 0
                 tmp_step = polygon_steps[:]
@@ -820,36 +835,35 @@ class PlayGame:
                         step = random.choice(tmp_step)
                         tmp_step.remove(step)
                         for point in polygon_borders[index_border]:
-                            Map.table[point[0]][point[1]] = 0
-                        ok_step, tmp_border = Map.moving_polygon(
+                            self.map.table[point[0]][point[1]] = 0
+                        ok_step, tmp_border = self.map.moving_polygon(
                             polygon_borders[index_border], step)
                         if ok_step:
                             polygon_borders[index_border] = tmp_border
                             for point in polygon_borders[index_border]:
-                                Map.table[point[0]][point[1]] = 1
-                            Map.paint_inside_polygon(
+                                self.map.table[point[0]][point[1]] = 1
+                            self.map.paint_inside_polygon(
                                 polygon_borders[index_border])
                             index_border += 1
                         else:
                             for point in polygon_borders[index_border]:
-                                Map.table[point[0]][point[1]] = 1
+                                self.map.table[point[0]][point[1]] = 1
                     else:
                         index_border += 1
                 if self.isplay == True:
-                    robot.direction_queue = algo(
-                        Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
+                    self.robot.direction_queue = algo(
+                        self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
 
-            if Map.table[robot.posi][robot.posj] == 3:
+            if self.map.table[self.robot.posi][self.robot.posj] == 3:
                 self.isplay = False
-            Map.table[robot.posi][robot.posj] = 2
+                point = 0
+            self.map.table[self.robot.posi][self.robot.posj] = 2
 
-            pygame.draw.rect(screen, (0, 38, 230), (50, 50, 150, 70), 5)
-
-        def drawRobot(robot):
-            screen.blit(robot.robot_image, (robot.posj * width_rec +
-                                            x_root + robot.posx + width_rec/4 + 1, robot.posi * width_rec + y_root + robot.posy + width_rec/4 + 1, width_rec - 2, width_rec - 2))
+        def drawRobot():
+            screen.blit(self.robot.robot_image, (self.robot.posj * width_rec +
+                                                 x_root + self.robot.posx + width_rec/4 + 1, self.robot.posi * width_rec + y_root + self.robot.posy + width_rec/4 + 1, width_rec - 2, width_rec - 2))
             if self.isplay:
-                return robot.move()
+                return self.robot.move()
 
         def drawWall():
             wall_color = (0, 38, 230)  # Color for the walls
@@ -858,59 +872,60 @@ class PlayGame:
                     pygame.draw.rect(screen, (0, 0, 0), (j * width_rec +
                                                          x_root, i * width_rec + y_root, width_rec, width_rec))
 
-                    if Map.table[i][j] == 1:
+                    if self.map.table[i][j] == 1:
                         pygame.draw.rect(screen, wall_color, (j * width_rec +
                                                               x_root + 1, i * width_rec + y_root + 1, width_rec - 2, width_rec - 2))
                     else:
                         pygame.draw.rect(screen, (255, 255, 255), (j * width_rec +
                                                                    x_root + 1, i * width_rec + y_root + 1, width_rec - 2, width_rec - 2))  # Assuming (0, 0, 0) is the color for removal
 
-        Map = TableGame()
-        robot = Robot()
+        self.map = TableGame()
+        self.robot = Robot()
+        self.point
         self.isplay = True
 
         if level == 1:
-            try:
-                readFile(Map, robot, "./map/" + str(map) + ".txt")
-                Map.checkpoint = []
-                for polygon in Map.polygons:
-                    path = Map.plotting_polygon(polygon)
-                    Map.paint_inside_polygon(path)
+            # try:
+            readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
+            self.map.checkpoint = []
+            for polygon in self.map.polygons:
+                path = self.map.plotting_polygon(polygon)
+                self.map.paint_inside_polygon(path)
 
-                robot.direction_queue = algo(
-                    Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
+            self.robot.direction_queue = algo(
+                self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
 
-                while self.isplay:
-                    width, height = screen.get_size()
-                    x_root = width/2 - column * width_rec/2
-                    y_root = height/2 - row*width_rec/2
-                    draw(robot)
+            while self.isplay:
+                width, height = screen.get_size()
+                x_root = width/2 - column * width_rec/2
+                y_root = height/2 - row*width_rec/2
+                draw()
 
-                    for e in pygame.event.get():
-                        if e.type == pygame.QUIT:
-                            pygame.quit()
-                            sys.exit()
-                    clock.tick(FPS)
-                    pygame.display.update()
-            except:
-                exception()
+                for e in pygame.event.get():
+                    if e.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                clock.tick(FPS)
+                pygame.display.update()
+            # except:
+            #     exception()
 
         elif level == 2:
             try:
-                readFile(Map, robot, "./map/" + str(map) + ".txt")
+                readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
 
-                for polygon in Map.polygons:
-                    path = Map.plotting_polygon(polygon)
-                    Map.paint_inside_polygon(path)
+                for polygon in self.map.polygons:
+                    path = self.map.plotting_polygon(polygon)
+                    self.map.paint_inside_polygon(path)
 
-                robot.direction_queue = checkpointlevel(
-                    Map.table, (robot.posi, robot.posj), Map.goal, Map.checkpoint, algo)[1:]
+                self.robot.direction_queue = checkpointlevel(
+                    self.map.table, (self.robot.posi, self.robot.posj), self.map.goal, self.map.checkpoint, algo)[1:]
 
                 while self.isplay:
                     width, height = screen.get_size()
                     x_root = width/2 - column * width_rec/2
                     y_root = height/2 - row*width_rec/2
-                    draw(robot)
+                    draw()
 
                     for e in pygame.event.get():
                         if e.type == pygame.QUIT:
@@ -923,23 +938,23 @@ class PlayGame:
 
         elif level == 3:
             try:
-                Map.checkpoint = []
-                readFile(Map, robot, "./map/" + str(map) + ".txt")
+                self.map.checkpoint = []
+                readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
 
                 polygon_borders = []
-                for polygon in Map.polygons:
-                    border = Map.drawing_dynamic_polygon(polygon)
+                for polygon in self.map.polygons:
+                    border = self.map.drawing_dynamic_polygon(polygon)
                     polygon_borders.append(border)
-                    Map.paint_inside_polygon(border)
+                    self.map.paint_inside_polygon(border)
 
-                robot.direction_queue = algo(
-                    Map.table, (robot.posi, robot.posj), (Map.goal))[1:]
+                self.robot.direction_queue = algo(
+                    self.map.table, (self.robot.posi, self.robot.posj), (self.map.goal))[1:]
                 while self.isplay:
 
                     width, height = screen.get_size()
                     x_root = width/2 - column * width_rec/2
                     y_root = height/2 - row*width_rec/2
-                    drawlv3(robot, len(polygon_borders))
+                    drawlv3(self.robot, len(polygon_borders))
 
                     for e in pygame.event.get():
                         if e.type == pygame.QUIT:
