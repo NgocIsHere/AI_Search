@@ -417,7 +417,7 @@ class TableGame:
     def paint_inside_polygon(self, path):
         for i in range(len(self.table)):
             for j in range(len(self.table[0])):
-                if (i, j) not in path and any(point[0] > i for point in path) and any(point[0] < i for point in path) and any(point[1] > j for point in path) and any(point[1] < j for point in path):
+                if any(point[0] > i and point[1] == j for point in path) and any(point[0] < i and point[1] == j for point in path) and any(point[1] > j and point[0] == i for point in path) and any(point[1] < j and point[0] == i for point in path):
                     self.table[i][j] = 4
 
     def moving_polygon(self, polygon, step):
@@ -966,6 +966,7 @@ class PlayGame:
                     pygame.display.update()
             except:
                 exception()
+        print(self.map.table)
 
 
 while True:
