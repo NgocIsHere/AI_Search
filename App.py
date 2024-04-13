@@ -268,6 +268,9 @@ def readFile(Map, robot, filename):
         Map.goal = (row - 1 - int(line[3]), int(line[2]))
         # set vị trí cho robot và đích
 
+        for i in range(4, len(line), 2):
+            Map.checkpoint.append((row - 1 - int(line[i + 1]), int(line[i])))
+
         line = file.readline().split(',')
         Map.num_polygon = int(line[0])
 
@@ -283,9 +286,7 @@ def readFile(Map, robot, filename):
         Map.table[robot.posi][robot.posj] = 2
         Map.table[Map.goal[0]][Map.goal[1]] = 3
 
-        line = file.readline().split(',')
-        for i in range(0, len(line), 2):
-            Map.checkpoint.append((row - 1 - int(line[i + 1]), int(line[i])))
+
 
 
 class TableGame:
@@ -915,6 +916,7 @@ class PlayGame:
         elif level == 2:
             try:
                 readFile(self.map, self.robot, "./map/" + str(map) + ".txt")
+                print(self.map.checkpoint)
 
                 for polygon in self.map.polygons:
                     path = self.map.plotting_polygon(polygon)
@@ -975,7 +977,10 @@ while True:
     mapChooser.choose()
 
     algorithmChooser = AlgorithmChooser()
-    algorithmChooser.choose()
+    if levelChooser.choice != 2:
+        algorithmChooser.choose()
+    else:
+        algorithmChooser.choice = find_path_bfs
 
     game = PlayGame()
     game.handle_game(levelChooser.choice, mapChooser.choice,
